@@ -11,12 +11,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Theme ---
 st.markdown("""
 <style>
-body, .main {
-    background: linear-gradient(135deg, #0d102b 0%, #181b25 50%, #0f1419 100%);
-}
+body, .main {background: linear-gradient(135deg, #0d102b 0%, #181b25 50%, #0f1419 100%);}
 h1, h2, h3, h4, h5, h6 {
     color: #a3c2fd !important;
     text-shadow: 0 0 10px rgba(163, 194, 253, 0.3);
@@ -78,11 +75,6 @@ h1, h2, h3, h4, h5, h6 {
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align:center;'>🧬 Collagen 6A3 Myopathy Simulator</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align:center;'>Gene Expression · Muscle Health · Regeneration Modeling</h3>", unsafe_allow_html=True)
-st.markdown("---")
-
-# --- User Type Selection ---
 if "user_type" not in st.session_state:
     st.session_state.user_type = None
 if "founder_ok" not in st.session_state:
@@ -103,6 +95,7 @@ if st.session_state.user_type is None:
     with col4:
         if st.button("Founder"):
             st.session_state.user_type = "founder"
+    st.stop()
 elif st.session_state.user_type == "founder" and not st.session_state.founder_ok:
     pwd = st.text_input("Enter founder password:", type="password")
     if st.button("Submit Password"):
@@ -112,6 +105,19 @@ elif st.session_state.user_type == "founder" and not st.session_state.founder_ok
         else:
             st.error("Wrong password. Try again.")
     st.stop()
+else:
+    if st.session_state.user_type == "patient":
+        st.markdown("<h2 style='color:#FFD700;text-align:center;'>DON'T GIVE UP</h2>", unsafe_allow_html=True)
+    elif st.session_state.user_type == "doctor":
+        st.markdown("<h2 style='color:#FFD700;text-align:center;'>Don't let them down!</h2>", unsafe_allow_html=True)
+    elif st.session_state.user_type == "researcher":
+        st.markdown("<h2 style='color:#FFD700;text-align:center;'>Welcome to the Gene Expression!</h2>", unsafe_allow_html=True)
+    elif st.session_state.user_type == "founder":
+        st.markdown("<h2 style='color:#FFD700;text-align:center;'>Welcome Founder!</h2>", unsafe_allow_html=True)
+
+st.markdown("<h1 style='text-align:center;'>🧬 Collagen 6A3 Myopathy Simulator</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align:center;'>Gene Expression · Muscle Health · Regeneration Modeling</h3>", unsafe_allow_html=True)
+st.markdown("---")
 
 # --- Sidebar Controls ---
 st.sidebar.markdown("<h2 style='color:#FFD700;'>Simulation Controls</h2>", unsafe_allow_html=True)
@@ -146,7 +152,6 @@ st.sidebar.markdown("""
 - Try Streamlit Cloud for easy deployment!
 """)
 
-# --- Simulation Functions ---
 def simulate_gene_expression(transcription_rate, degradation_rate, simulation_time, time_steps):
     dt = simulation_time / time_steps
     t = np.linspace(0, simulation_time, time_steps)
@@ -212,7 +217,6 @@ def export_csv(data_dict):
     df = pd.DataFrame(data_dict)
     return df.to_csv(index=False)
 
-# --- Theory Simulation Functions ---
 def plot_dna_helix(fade=0):
     t = np.linspace(0, 4 * np.pi, 100)
     x1 = np.cos(t)
@@ -251,12 +255,10 @@ def plot_regeneration_curve(progress=1):
                       font_color="#00ff88", height=300, margin=dict(l=0, r=0, t=0, b=0))
     return fig
 
-# --- Tabs ---
-tab_sim, tab_explain, tab_guide, tab_lab, tab_theory, tab_chat = st.tabs([
-    "Simulation Results", "Scientific Concepts", "User Guide", "Lab & Experiments", "Theory Simulation", "Chaty G 1 Assistant"
+tab_sim, tab_explain, tab_guide, tab_lab, tab_theory, tab_scitheory, tab_chat = st.tabs([
+    "Simulation Results", "Scientific Concepts", "User Guide", "Lab & Experiments", "Theory Simulation", "Scientific Theory Page", "Chaty G 1 Assistant"
 ])
 
-# --- Download Buttons ---
 st.markdown("<h4 style='color:#FFD700'>Download the App</h4>", unsafe_allow_html=True)
 col_download1, col_download2, col_download3, col_download4 = st.columns(4)
 with col_download1:
@@ -268,7 +270,6 @@ with col_download3:
 with col_download4:
     st.markdown("<a href='https://apps.apple.com/us/genre/mac/id39' target='_blank'><button class='download-btn'>Mac</button></a>", unsafe_allow_html=True)
 
-# --- Simulation Tab ---
 with tab_sim:
     st.markdown("## 🧪 Simulation Visualization")
     run_sim = st.button("🚀 Run Simulation", key="run_sim_btn")
@@ -341,7 +342,6 @@ with tab_sim:
         csv_data = export_csv(data_dict)
         st.download_button("Download Simulation CSV", csv_data, "simulation_results.csv", "text/csv")
 
-# --- Scientific Concepts Tab ---
 with tab_explain:
     st.markdown("## 🔬 Scientific Concepts")
     st.markdown("""
@@ -356,10 +356,8 @@ with tab_explain:
     - Regeneration helps recover health after injury.
 
     *Simulation Equations*
-    
     d(mRNA)/dt = transcription_rate - degradation_rate * mRNA
     d(Health)/dt: Decreases if mRNA low, recovers with regeneration_rate
-    
     """)
     st.markdown("""
     *References:*  
@@ -367,7 +365,6 @@ with tab_explain:
     - Lampe, A.K., & Bushby, K.M. "Collagen VI related muscle disorders." Journal of Medical Genetics (2005)
     """)
 
-# --- User Guide Tab ---
 with tab_guide:
     st.markdown("## 📖 User Guide")
     st.markdown("""
@@ -385,7 +382,6 @@ with tab_guide:
     - Deploy to [Streamlit Cloud](https://streamlit.io/cloud)
     """)
 
-# --- Lab & Experiments Tab ---
 with tab_lab:
     st.markdown("## 🧪 Lab & Experiments")
     st.markdown("<h4 style='color:#FFD700'>Periodic Table</h4>", unsafe_allow_html=True)
@@ -421,7 +417,6 @@ with tab_lab:
     st.plotly_chart(fig_comp, use_container_width=True)
     st.markdown("Experiment with the compound concentration above.")
 
-# --- Theory Simulation Tab ---
 with tab_theory:
     st.markdown("## 🧬 Run Theory Simulation")
     if st.button("Run Theory Simulation", key="run_theory_btn"):
@@ -431,99 +426,70 @@ with tab_theory:
             fig_dna = plot_dna_helix(fade=f)
             st.plotly_chart(fig_dna, use_container_width=True)
         st.markdown("The gene (DNA helix) is shown fading and breaking (red).")
-
         st.markdown("### Step 2: Boost the Muscles")
         boost_levels = np.linspace(1, 3, 10)
         for b in boost_levels:
             fig_muscle = plot_muscle_boost(boost=b)
             st.plotly_chart(fig_muscle, use_container_width=True)
         st.markdown("Muscle activity rises sharply, simulating a theoretical boost.")
-
         st.markdown("### Step 3: Regenerate")
         progress_steps = np.linspace(0, 1, 20)
         for p in progress_steps:
             fig_regen = plot_regeneration_curve(progress=p)
             st.plotly_chart(fig_regen, use_container_width=True)
         st.markdown("Regeneration curve rises from 0% to 100% (green).")
-
         st.success("Theory simulation complete! You can run it again or ask Chaty G1 for more theory.")
 
-# --- Chaty G 1 Assistant Tab (with ML for patients/doctors/researchers/founder) ---
+with tab_scitheory:
+    st.markdown("## 🧬 Scientific Theory")
+    st.markdown("""
+    ### Collagen VI-related Myopathies (Scientific Theory)
+    Collagen VI-related myopathies are caused by mutations in the COL6A1, COL6A2, or COL6A3 genes.  
+    These mutations affect the collagen VI protein, which is a critical component of the extracellular matrix in skeletal muscles.  
+    The defective protein results in weakened muscle structure, causing progressive muscle weakness and related symptoms.
+
+    **Concept Summary:**  
+    The therapeutic approach I am exploring focuses on targeting the defective protein or gene responsible for the disease, with the goal of stimulating regeneration and repair but instead of replacing every damaged muscle fiber directly, the strategy is to remove or disable the harmful components and boost natural regenerative processes.
+
+    **Proposed Methodology:**  
+    1. **Target Identification** – Identify the defective COL6A3 gene sequence or misfolded protein causing the disease.  
+    2. **Disable the Faulty Component** – Use molecular tools such as CRISPR-Cas9, RNA interference, or protein degradation methods to neutralize or remove defective gene activity or protein.  
+    3. **Stimulate Regeneration** – Promote surrounding healthy cells to produce correct collagen VI and rebuild muscle structure.  
+    4. **Systemic Delivery** – Administer therapy through the bloodstream or targeted delivery, minimizing the need for multiple injections.  
+    5. **Long-Term Recovery** – Focus on gradual regeneration rather than immediate results, allowing the body to progressively heal.
+
+    **Scientific Rationale and Reasoning:**  
+    The human body has a natural ability to regenerate cells and produce proteins necessary for tissue repair and by removing harmful mutated proteins or gene activity, the cellular environment improves, allowing healthier tissue to form.  
+    This concept is similar to the approaches used in cancer treatment where diseased cells are selectively destroyed, but here the focus is on disabling defective proteins and stimulating healthy regeneration while gene therapy is well-known, this approach combines removal and regeneration to potentially enhance effectiveness.
+
+    There is an acceptance that some healthy cells or proteins may be sacrificed during treatment; this is considered a reasonable trade-off if it results in overall long-term improvement or stabilization.  
+    The process requires careful timing and delivery to balance safety and efficacy.
+    """)
+    if st.button("Show Visual Sequence for Theory", key="run_theory_scientific_btn"):
+        st.markdown("### Step 1: Destroy the Gene")
+        fade_steps = np.linspace(0, 1, 10)
+        for f in fade_steps:
+            fig_dna = plot_dna_helix(fade=f)
+            st.plotly_chart(fig_dna, use_container_width=True)
+        st.markdown("The gene (DNA helix) fades and breaks (red), representing disabling the faulty component.")
+
+        st.markdown("### Step 2: Boost the Muscles")
+        boost_levels = np.linspace(1, 3, 10)
+        for b in boost_levels:
+            fig_muscle = plot_muscle_boost(boost=b)
+            st.plotly_chart(fig_muscle, use_container_width=True)
+        st.markdown("Muscle graph increases, representing the stimulation of regeneration.")
+
+        st.markdown("### Step 3: Regenerate")
+        progress_steps = np.linspace(0, 1, 20)
+        for p in progress_steps:
+            fig_regen = plot_regeneration_curve(progress=p)
+            st.plotly_chart(fig_regen, use_container_width=True)
+        st.markdown("Regeneration curve grows from 0% to 100% (green).")
+
 with tab_chat:
     st.markdown("## 🤖 Chaty G 1 - AI Assistant")
-    if 'chat_history' not in st.session_state:
-        st.session_state.chat_history = []
-    if 'chat_input' not in st.session_state:
-        st.session_state.chat_input = ""
-    chat_container = st.container()
-    with chat_container:
-        st.markdown('<div style="max-height:400px;overflow-y:auto;background:#141627;border-radius:10px;padding:10px;">', unsafe_allow_html=True)
-        for msg in st.session_state.chat_history:
-            if msg['sender'] == 'user':
-                st.markdown(f'<div style="text-align:right;color:#FFD700;background:#21264b;border-radius:15px 15px 5px 15px;margin:5px;">{msg["text"]}</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div style="text-align:left;color:#a3c2fd;background:#192041;border-radius:15px 15px 15px 5px;margin:5px;">{msg["text"]}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    col1, col2 = st.columns([4,1])
-    with col1:
-        chat_input = st.text_input("Type your message...", key="chat_input_box", value=st.session_state.chat_input)
-    with col2:
-        send_btn = st.button("Send 🚀")
-    def chaty_g1_respond(msg):
-        msg_l = msg.lower().strip()
-        if "run theory" in msg_l:
-            st.session_state.run_theory_trigger = True
-            return "🧬 Running theory simulation now! See the Theory Simulation tab."
-        if st.session_state.user_type == "patient":
-            if "pain" in msg_l or "weakness" in msg_l:
-                return "For muscle pain/weakness, monitor your muscle health graph and consult your physician. Would you like tips on exercises?"
-            if "doctor" in msg_l:
-                return "Would you like to share your report with your doctor?"
-        elif st.session_state.user_type == "doctor":
-            if "patient" in msg_l:
-                return "You can view and analyze patient simulation data and export results for clinical review."
-            if "therapy" in msg_l:
-                return "Gene therapy boost can be simulated. Results can help in patient therapy planning."
-        elif st.session_state.user_type == "researcher":
-            if "experiment" in msg_l:
-                return "See the Lab & Experiments tab for compound and gene/muscle/protein visualizations."
-            if "data" in msg_l:
-                return "Simulation results can be downloaded as CSV for research analysis."
-        elif st.session_state.user_type == "founder":
-            if "vision" in msg_l or "future" in msg_l:
-                return "Your vision shapes this platform. All features are ready for your input."
-            if "password" in msg_l:
-                return "Password already verified. You have full access."
-        if "collagen" in msg_l or "6a3" in msg_l:
-            return "🧬 Collagen 6A3 is essential for muscle integrity. Mutations cause muscle disorders. Want to run a simulation?"
-        if "health" in msg_l or "muscle" in msg_l:
-            return "💪 Muscle health is tracked in the simulation. You can see effects of gene therapy, damage, and regeneration."
-        if "therapy" in msg_l or "treatment" in msg_l:
-            return "Gene therapy boosts mRNA, simulating new treatments. Enable in sidebar and rerun the simulation."
-        if "regeneration" in msg_l:
-            return "Regeneration models natural muscle healing. Adjust regeneration rate in the sidebar."
-        if "download" in msg_l:
-            return "Download the app for iPhone, Android, Mac, or Windows using the buttons on the main page."
-        if "waad" in msg_l or "waad naser" in msg_l:
-            return "For farther explanation ask waad naser. Instagram: @waado__o"
-        if "quote" in msg_l or "vision" in msg_l:
-            return "“A mind that sees too far ahead trapped by its own vision.”"
-        if "bye" in msg_l or "exit" in msg_l:
-            return "👋 Goodbye! Feel free to come back to the Collagen 6A3 Myopathy Simulator anytime."
-        return "I'm Chaty G 1! Ask about gene, muscle, therapy, experiments, or app features. If you want theory, type 'run theory'."
-    if send_btn and chat_input:
-        st.session_state.chat_history.append({'sender':'user','text':chat_input})
-        reply = chaty_g1_respond(chat_input)
-        st.session_state.chat_history.append({'sender':'chaty_g1','text':reply})
-        st.session_state.chat_input = ""
-        st.experimental_rerun()
-    st.markdown("---")
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.chat_history = []
-        st.experimental_rerun()
-    if st.session_state.get("run_theory_trigger", False):
-        st.session_state.run_theory_trigger = False
-        st.switch_page("Theory Simulation") # Try to switch to theory tab if supported
+    st.info("Chaty G 1 is updating soon to answer your questions and help you interact with the app. Stay tuned for advanced conversations!")
 
 st.markdown("---")
 st.markdown("""
