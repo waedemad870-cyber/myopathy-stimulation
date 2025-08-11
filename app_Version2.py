@@ -7,12 +7,14 @@ import time
 from io import BytesIO
 from PIL import Image
 
+# --- PAGE CONFIG ---
 st.set_page_config(
     page_title="Collagen 6A3 Myopathy Simulator",
     page_icon="🧬",
     layout="wide"
 )
 
+# --- DARK THEME STYLE ---
 st.markdown("""
 <style>
 body, .main {background: linear-gradient(135deg, #0d102b 0%, #181b25 50%, #0f1419 100%);}
@@ -80,11 +82,13 @@ h1, h2, h3, h4, h5, h6 {
 </style>
 """, unsafe_allow_html=True)
 
+# --- SESSION STATE FOR ROLES ---
 if "user_type" not in st.session_state:
     st.session_state.user_type = None
 if "founder_ok" not in st.session_state:
     st.session_state.founder_ok = False
 
+# --- ROLE SELECTION & FOUNDER PASSWORD ---
 if st.session_state.user_type is None:
     st.markdown("<h4 style='color:#FFD700;'>Who are you?</h4>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
@@ -120,10 +124,12 @@ else:
     elif st.session_state.user_type == "founder":
         st.markdown("<h2 style='color:#FFD700;text-align:center;'>Welcome Founder!</h2>", unsafe_allow_html=True)
 
+# --- MAIN HEADER ---
 st.markdown("<h1 style='text-align:center;'>🧬 Collagen 6A3 Myopathy Simulator</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align:center;'>Gene Expression · Muscle Health · Regeneration Modeling</h3>", unsafe_allow_html=True)
 st.markdown("---")
 
+# --- HOW TO USE EXPANDER ---
 with st.expander("ℹ️ How to Use This App", expanded=True):
     st.markdown("""
     <div class="info-card">
@@ -138,6 +144,7 @@ with st.expander("ℹ️ How to Use This App", expanded=True):
     </div>
     """, unsafe_allow_html=True)
 
+# --- SIDEBAR CONTROLS ---
 st.sidebar.markdown("<h2 style='color:#FFD700;'>Simulation Controls</h2>", unsafe_allow_html=True)
 transcription_rate = st.sidebar.slider("Transcription Rate (mRNA production)", 0.1, 20.0, 5.0, 0.1)
 degradation_rate = st.sidebar.slider("Degradation Rate (mRNA breakdown)", 0.01, 1.0, 0.1, 0.01)
@@ -170,6 +177,7 @@ st.sidebar.markdown("""
 - Try Streamlit Cloud for easy deployment!
 """)
 
+# --- SIMULATION FUNCTIONS ---
 def simulate_gene_expression(tr, dr, sim_time, steps):
     dt = sim_time / steps
     t = np.linspace(0, sim_time, steps)
@@ -244,6 +252,7 @@ def generate_pdf_report(data_dict):
     buf.seek(0)
     return buf
 
+# --- THEORY SIMULATION VISUALS ---
 def plot_dna_helix(fade=0):
     t = np.linspace(0, 4 * np.pi, 100)
     x1 = np.cos(t)
@@ -282,10 +291,12 @@ def plot_regeneration_curve(progress=1):
                       font_color="#00ff88", height=300, margin=dict(l=0, r=0, t=0, b=0))
     return fig
 
+# --- TABS ---
 tab_sim, tab_explain, tab_guide, tab_lab, tab_theory, tab_scitheory, tab_chatg1 = st.tabs([
     "Simulation Results", "Scientific Concepts", "User Guide", "Lab & Experiments", "Theory Simulation", "Scientific Theory Page", "Chaty G 1"
 ])
 
+# --- DOWNLOAD BUTTONS ---
 st.markdown("<h4 style='color:#FFD700'>Download the App</h4>", unsafe_allow_html=True)
 col_download1, col_download2, col_download3, col_download4 = st.columns(4)
 with col_download1:
@@ -297,6 +308,7 @@ with col_download3:
 with col_download4:
     st.markdown("<a href='https://apps.apple.com/us/genre/mac/id39' target='_blank'><button class='download-btn'>Mac</button></a>", unsafe_allow_html=True)
 
+# --- TAB: SIMULATION RESULTS ---
 with tab_sim:
     st.markdown("## 🧪 Simulation Visualization")
     run_sim = st.button("🚀 Run Simulation", key="run_sim_btn")
@@ -377,6 +389,7 @@ with tab_sim:
         pdf_buf = generate_pdf_report(data_dict)
         st.download_button("Download PDF Report (CSV placeholder)", pdf_buf, "simulation_report.csv", "text/csv")
 
+# --- TAB: SCIENTIFIC CONCEPTS ---
 with tab_explain:
     st.markdown("## 🔬 Scientific Concepts")
     st.markdown("""
@@ -403,6 +416,7 @@ with tab_explain:
     - Lampe, A.K., & Bushby, K.M. "Collagen VI related muscle disorders." Journal of Medical Genetics (2005)
     """)
 
+# --- TAB: USER GUIDE ---
 with tab_guide:
     st.markdown("## 📖 User Guide")
     st.markdown("""
@@ -421,6 +435,7 @@ with tab_guide:
     - Deploy to [Streamlit Cloud](https://streamlit.io/cloud)
     """)
 
+# --- TAB: LAB & EXPERIMENTS ---
 with tab_lab:
     st.markdown("## 🧪 Lab & Experiments")
     st.markdown("<h4 style='color:#FFD700'>Periodic Table</h4>", unsafe_allow_html=True)
@@ -456,6 +471,7 @@ with tab_lab:
     st.plotly_chart(fig_comp, use_container_width=True)
     st.markdown("Experiment with the compound concentration above.")
 
+# --- TAB: THEORY SIMULATION ---
 with tab_theory:
     st.markdown("## 🧬 Run Theory Simulation")
     theory_ready = st.button("Run Theory Simulation", key="run_theory_btn")
@@ -485,6 +501,7 @@ with tab_theory:
         st.markdown("Regeneration curve grows from 0% to 100% (green).")
         st.success("Theory simulation complete! You can run it again or ask Chaty G1 for more theory.")
 
+# --- TAB: SCIENTIFIC THEORY PAGE ---
 with tab_scitheory:
     st.markdown("## 🧬 Scientific Theory")
     st.markdown("""
@@ -535,6 +552,7 @@ with tab_scitheory:
             time.sleep(0.07)
         st.markdown("Regeneration curve grows from 0% to 100% (green).")
 
+# --- TAB: CHATY G 1 ---
 with tab_chatg1:
     st.markdown("<h1 style='color:#FFD700;text-align:center;'>🤖 Chaty G 1 - Control & Chat</h1>", unsafe_allow_html=True)
     st.markdown("""
@@ -561,6 +579,7 @@ with tab_chatg1:
             reply = "I, Chaty G 1, was created by Waad Naser, IT Year 2. Let's keep improving together!"
         elif "run theory" in question or "show theory" in question:
             reply = "Running the Theory Simulation now... Switch to 'Theory Simulation' tab for visuals!"
+            st.session_state["run_theory_from_chatg1"] = True
         elif "help" in question or "how to use" in question:
             reply = "Go to the User Guide tab for step-by-step help. Or ask me anything specific!"
         elif "export" in question or "report" in question:
@@ -580,10 +599,15 @@ with tab_chatg1:
         elif "clear" in question:
             st.session_state.chat_history_g1 = []
             reply = "Chat cleared!"
+        elif "experiment" in question or "lab" in question:
+            reply = "Go to the Lab & Experiments tab for chemistry, periodic table, and compound visualization!"
+        elif "periodic" in question or "table" in question:
+            reply = "Periodic table is on the Lab & Experiments tab. Click elements for info."
         else:
             reply = "I'm Chaty G 1! Ask me about science, therapy, controls, or tell me to run a simulation. For detailed theory visuals, try the theory tabs."
         st.session_state.chat_history_g1.append({"role":"chaty", "text": reply})
 
+    # --- Render Chat ---
     for msg in st.session_state.chat_history_g1[-8:]:
         if msg["role"]=="user":
             st.markdown(f"<div style='text-align:right;color:#FFD700;background:#21264b;border-radius:15px 15px 5px 15px;margin:5px;padding:8px;'>{msg['text']}</div>", unsafe_allow_html=True)
@@ -592,6 +616,35 @@ with tab_chatg1:
     if st.button("Clear Chaty G 1 Chat"):
         st.session_state.chat_history_g1 = []
 
+    # --- Trigger Theory Simulation from Chaty G 1 ---
+    if st.session_state.get("run_theory_from_chatg1", False):
+        st.session_state["run_theory_from_chatg1"] = False
+        st.success("Running Theory Simulation below!")
+        st.markdown("### Step 1: Destroy the Gene")
+        fade_steps = np.linspace(0, 1, 10)
+        for f in fade_steps:
+            fig_dna = plot_dna_helix(fade=f)
+            st.plotly_chart(fig_dna, use_container_width=True)
+            time.sleep(0.07)
+        st.markdown("The gene (DNA helix) fades and breaks (red), representing disabling the faulty component.")
+
+        st.markdown("### Step 2: Boost the Muscles")
+        boost_levels = np.linspace(1, 3, 10)
+        for b in boost_levels:
+            fig_muscle = plot_muscle_boost(boost=b)
+            st.plotly_chart(fig_muscle, use_container_width=True)
+            time.sleep(0.07)
+        st.markdown("Muscle graph increases, representing the stimulation of regeneration.")
+
+        st.markdown("### Step 3: Regenerate")
+        progress_steps = np.linspace(0, 1, 20)
+        for p in progress_steps:
+            fig_regen = plot_regeneration_curve(progress=p)
+            st.plotly_chart(fig_regen, use_container_width=True)
+            time.sleep(0.07)
+        st.markdown("Regeneration curve grows from 0% to 100% (green).")
+
+# --- FOOTER ---
 st.markdown("---")
 st.markdown("""
 <div style='text-align:center;color:#FFD700;font-size:1.1em;'>
