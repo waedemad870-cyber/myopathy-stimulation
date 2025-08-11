@@ -1,2 +1,10 @@
 streamlit
 plotly
+pandas
+numpy
+scipy
+matplotlib
+scikit-learn
+tensorflow
+torch
+Pillow
