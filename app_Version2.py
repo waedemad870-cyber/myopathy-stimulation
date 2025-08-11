@@ -9,7 +9,7 @@ from PIL import Image
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="Collagen 6A3 Myopathy Simulator",
+    page_title=" Myopathy: Gene Expression & Muscle Health Simulatorr",
     page_icon="🧬",
     layout="wide"
 )
