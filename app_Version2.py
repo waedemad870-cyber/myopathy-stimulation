@@ -13,7 +13,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Theme ---
 st.markdown("""
 <style>
 body, .main {background: linear-gradient(135deg, #0d102b 0%, #181b25 50%, #0f1419 100%);}
@@ -81,7 +80,6 @@ h1, h2, h3, h4, h5, h6 {
 </style>
 """, unsafe_allow_html=True)
 
-# --- User Role Selection ---
 if "user_type" not in st.session_state:
     st.session_state.user_type = None
 if "founder_ok" not in st.session_state:
@@ -122,12 +120,10 @@ else:
     elif st.session_state.user_type == "founder":
         st.markdown("<h2 style='color:#FFD700;text-align:center;'>Welcome Founder!</h2>", unsafe_allow_html=True)
 
-# --- App Title and Intro ---
 st.markdown("<h1 style='text-align:center;'>🧬 Collagen 6A3 Myopathy Simulator</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align:center;'>Gene Expression · Muscle Health · Regeneration Modeling</h3>", unsafe_allow_html=True)
 st.markdown("---")
 
-# --- How to Use Panel ---
 with st.expander("ℹ️ How to Use This App", expanded=True):
     st.markdown("""
     <div class="info-card">
@@ -142,7 +138,6 @@ with st.expander("ℹ️ How to Use This App", expanded=True):
     </div>
     """, unsafe_allow_html=True)
 
-# --- Sidebar Controls ---
 st.sidebar.markdown("<h2 style='color:#FFD700;'>Simulation Controls</h2>", unsafe_allow_html=True)
 transcription_rate = st.sidebar.slider("Transcription Rate (mRNA production)", 0.1, 20.0, 5.0, 0.1)
 degradation_rate = st.sidebar.slider("Degradation Rate (mRNA breakdown)", 0.01, 1.0, 0.1, 0.01)
@@ -175,7 +170,6 @@ st.sidebar.markdown("""
 - Try Streamlit Cloud for easy deployment!
 """)
 
-# --- Simulation Functions ---
 def simulate_gene_expression(tr, dr, sim_time, steps):
     dt = sim_time / steps
     t = np.linspace(0, sim_time, steps)
@@ -245,7 +239,6 @@ def save_fig_as_image(fig):
 
 def generate_pdf_report(data_dict):
     df = pd.DataFrame(data_dict)
-    # Just a placeholder, could use fpdf, reportlab, etc.
     buf = BytesIO()
     df.to_csv(buf, index=False)
     buf.seek(0)
@@ -289,11 +282,10 @@ def plot_regeneration_curve(progress=1):
                       font_color="#00ff88", height=300, margin=dict(l=0, r=0, t=0, b=0))
     return fig
 
-tab_sim, tab_explain, tab_guide, tab_lab, tab_theory, tab_scitheory, tab_chat = st.tabs([
-    "Simulation Results", "Scientific Concepts", "User Guide", "Lab & Experiments", "Theory Simulation", "Scientific Theory Page", "Chaty G 1 Assistant"
+tab_sim, tab_explain, tab_guide, tab_lab, tab_theory, tab_scitheory, tab_chatg1 = st.tabs([
+    "Simulation Results", "Scientific Concepts", "User Guide", "Lab & Experiments", "Theory Simulation", "Scientific Theory Page", "Chaty G 1"
 ])
 
-# --- Download Buttons ---
 st.markdown("<h4 style='color:#FFD700'>Download the App</h4>", unsafe_allow_html=True)
 col_download1, col_download2, col_download3, col_download4 = st.columns(4)
 with col_download1:
@@ -305,7 +297,6 @@ with col_download3:
 with col_download4:
     st.markdown("<a href='https://apps.apple.com/us/genre/mac/id39' target='_blank'><button class='download-btn'>Mac</button></a>", unsafe_allow_html=True)
 
-# --- Simulation Tab ---
 with tab_sim:
     st.markdown("## 🧪 Simulation Visualization")
     run_sim = st.button("🚀 Run Simulation", key="run_sim_btn")
@@ -402,13 +393,9 @@ with tab_explain:
     *Simulation Equations*
     d(mRNA)/dt = transcription_rate - degradation_rate * mRNA
     d(Health)/dt: Decreases if mRNA low, recovers with regeneration_rate
-    """)
 
-    st.markdown("""
-    <b>Realistic biological rates?</b><br>
-    Typical collagen mRNA half-life: ~10-20 hours. Muscle regeneration in mice: ~7-14 days.<br>
-    You can tune the rates above to match published literature!
-    """, unsafe_allow_html=True)
+    Typical collagen mRNA half-life: ~10-20 hours. Muscle regeneration in mice: ~7-14 days. You can tune the rates above to match published literature!
+    """)
 
     st.markdown("""
     *References:*  
@@ -548,45 +535,62 @@ with tab_scitheory:
             time.sleep(0.07)
         st.markdown("Regeneration curve grows from 0% to 100% (green).")
 
-with tab_chat:
-    st.markdown("## 🤖 Chaty G 1 - AI Assistant")
+with tab_chatg1:
+    st.markdown("<h1 style='color:#FFD700;text-align:center;'>🤖 Chaty G 1 - Control & Chat</h1>", unsafe_allow_html=True)
     st.markdown("""
-    <div class="info-card">Chaty G 1 can answer questions about the science, theory, and the app. Type a question and get a real response!</div>
+    <div class="info-card">
+    <b>Meet Chaty G 1:</b><br>
+    I am Chaty G 1, created by Waad Naser (IT Year 2). I can chat, answer science, guide you through the app, and even control simulations.
+    <br><br>
+    <b>How can I help?</b> Type your question or command below!
+    </div>
     """, unsafe_allow_html=True)
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-    chat_input = st.text_input("Ask Chaty G 1 anything about collagen, muscle, therapy, science, or experiments:")
-    if st.button("Send"):
-        question = chat_input.strip().lower()
-        if question:
-            st.session_state.chat_history.append({"role":"user", "text": chat_input})
-            # Basic smart responses:
-            if "theory" in question or "run theory" in question:
-                reply = "Sure! Switch to Theory Simulation or Scientific Theory tab for a step-by-step visual sequence of the proposed methodology."
-            elif "collagen" in question or "6a3" in question or "protein" in question:
-                reply = "Collagen VI (especially COL6A3) is key for muscle structure. Mutations disrupt the protein, causing myopathies. Treatment may involve gene editing or regeneration stimulation."
-            elif "gene" in question or "crisp" in question or "cas9" in question:
-                reply = "CRISPR-Cas9 and RNA interference are promising molecular tools to disable faulty genes or proteins. See the Scientific Theory tab for details."
-            elif "regeneration" in question or "muscle" in question:
-                reply = "Regeneration is simulated in the app and boosted by healthy collagen VI. You can adjust the regeneration rate in the sidebar."
-            elif "doctor" in question or "scientist" in question or "report" in question:
-                reply = "Doctors/scientists can export simulation results as CSV, PNG, or PDF for research or clinical use."
-            elif "export" in question or "data" in question or "pdf" in question:
-                reply = "You can export all simulation data as CSV, graphs as PNG, or a simple PDF report. See the Simulation Results tab for buttons."
-            elif "hello" in question or "hi" in question:
-                reply = "Hello! How can I assist you today?"
-            elif "waad" in question or "waad naser" in question:
-                reply = "For farther explanation ask waad naser. Instagram: @waado__o"
-            else:
-                reply = "I'm Chaty G 1! Ask me anything about collagen, muscle health, gene therapy, or the app. For detailed theory visuals, try the theory tabs."
-            st.session_state.chat_history.append({"role":"chaty", "text": reply})
-    for msg in st.session_state.chat_history[-8:]:
+
+    if "chat_history_g1" not in st.session_state:
+        st.session_state.chat_history_g1 = []
+
+    chat_input_g1 = st.text_input("Type a message to Chaty G 1:", key="chat_input_g1")
+    send_g1 = st.button("Send to Chaty G 1")
+    # --- Chaty G 1 Logic ---
+    if send_g1 and chat_input_g1:
+        question = chat_input_g1.strip().lower()
+        st.session_state.chat_history_g1.append({"role":"user", "text": chat_input_g1})
+        # Controls
+        reply = None
+        if "who created you" in question or "waad" in question or "your creator" in question:
+            reply = "I, Chaty G 1, was created by Waad Naser, IT Year 2. Let's keep improving together!"
+        elif "run theory" in question or "show theory" in question:
+            reply = "Running the Theory Simulation now... Switch to 'Theory Simulation' tab for visuals!"
+        elif "help" in question or "how to use" in question:
+            reply = "Go to the User Guide tab for step-by-step help. Or ask me anything specific!"
+        elif "export" in question or "report" in question:
+            reply = "You can export results as CSV, PNG, or PDF report from Simulation Results tab!"
+        elif "collagen" in question or "6a3" in question or "protein" in question:
+            reply = "Collagen VI (especially COL6A3) is vital for muscle structure. Mutations cause myopathies. Treatments may involve gene editing or boosting regeneration."
+        elif "gene" in question or "crisp" in question or "cas9" in question:
+            reply = "CRISPR-Cas9 and RNAi are promising tools to disable faulty genes. See Scientific Theory page for full methodology."
+        elif "regeneration" in question or "muscle" in question:
+            reply = "Regeneration is modeled in the simulation. Adjust the rate in sidebar. See results in graphs!"
+        elif "doctor" in question or "scientist" in question or "report" in question:
+            reply = "Doctors/scientists can export all results, simulate therapies, and guide patients using this app."
+        elif "hello" in question or "hi" in question:
+            reply = "Hello! How can I assist you today?"
+        elif "vision" in question or "future" in question:
+            reply = "Your vision shapes this platform. Let's keep improving, buddy!"
+        elif "clear" in question:
+            st.session_state.chat_history_g1 = []
+            reply = "Chat cleared!"
+        else:
+            reply = "I'm Chaty G 1! Ask me about science, therapy, controls, or tell me to run a simulation. For detailed theory visuals, try the theory tabs."
+        st.session_state.chat_history_g1.append({"role":"chaty", "text": reply})
+
+    for msg in st.session_state.chat_history_g1[-8:]:
         if msg["role"]=="user":
             st.markdown(f"<div style='text-align:right;color:#FFD700;background:#21264b;border-radius:15px 15px 5px 15px;margin:5px;padding:8px;'>{msg['text']}</div>", unsafe_allow_html=True)
         else:
             st.markdown(f"<div style='text-align:left;color:#a3c2fd;background:#192041;border-radius:15px 15px 15px 5px;margin:5px;padding:8px;'>{msg['text']}</div>", unsafe_allow_html=True)
-    if st.button("Clear Chat"):
-        st.session_state.chat_history = []
+    if st.button("Clear Chaty G 1 Chat"):
+        st.session_state.chat_history_g1 = []
 
 st.markdown("---")
 st.markdown("""
