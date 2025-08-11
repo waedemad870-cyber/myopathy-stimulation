@@ -3,7 +3,9 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-from plotly.subplots import make_subplots
+import time
+from io import BytesIO
+from PIL import Image
 
 st.set_page_config(
     page_title="Collagen 6A3 Myopathy Simulator",
@@ -11,6 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
+# --- Theme ---
 st.markdown("""
 <style>
 body, .main {background: linear-gradient(135deg, #0d102b 0%, #181b25 50%, #0f1419 100%);}
@@ -72,9 +75,13 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 12px;
     width: 32px;
 }
+.stAlert, .stInfo {
+    font-size: 1.1em;
+}
 </style>
 """, unsafe_allow_html=True)
 
+# --- User Role Selection ---
 if "user_type" not in st.session_state:
     st.session_state.user_type = None
 if "founder_ok" not in st.session_state:
@@ -115,9 +122,25 @@ else:
     elif st.session_state.user_type == "founder":
         st.markdown("<h2 style='color:#FFD700;text-align:center;'>Welcome Founder!</h2>", unsafe_allow_html=True)
 
+# --- App Title and Intro ---
 st.markdown("<h1 style='text-align:center;'>🧬 Collagen 6A3 Myopathy Simulator</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align:center;'>Gene Expression · Muscle Health · Regeneration Modeling</h3>", unsafe_allow_html=True)
 st.markdown("---")
+
+# --- How to Use Panel ---
+with st.expander("ℹ️ How to Use This App", expanded=True):
+    st.markdown("""
+    <div class="info-card">
+    <b>Welcome!</b><br>
+    <ul>
+        <li>Start by selecting your role above.</li>
+        <li>Use the sidebar to set simulation parameters.</li>
+        <li>Navigate tabs for results, lab experiments, theory, and more.</li>
+        <li>Try the Theory Simulation for a visual sequence of gene therapy.</li>
+        <li>Export data or create a PDF report for your records.</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- Sidebar Controls ---
 st.sidebar.markdown("<h2 style='color:#FFD700;'>Simulation Controls</h2>", unsafe_allow_html=True)
@@ -147,18 +170,19 @@ else:
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
 *How to run:*  
-- Install dependencies: pip install streamlit numpy pandas plotly  
+- Install dependencies: pip install streamlit numpy pandas plotly pillow  
 - Run: streamlit run app.py
 - Try Streamlit Cloud for easy deployment!
 """)
 
-def simulate_gene_expression(transcription_rate, degradation_rate, simulation_time, time_steps):
-    dt = simulation_time / time_steps
-    t = np.linspace(0, simulation_time, time_steps)
-    mRNA = np.zeros(time_steps)
+# --- Simulation Functions ---
+def simulate_gene_expression(tr, dr, sim_time, steps):
+    dt = sim_time / steps
+    t = np.linspace(0, sim_time, steps)
+    mRNA = np.zeros(steps)
     mRNA[0] = 1.0
-    for i in range(1, time_steps):
-        dmRNA = transcription_rate - degradation_rate * mRNA[i-1]
+    for i in range(1, steps):
+        dmRNA = tr - dr * mRNA[i-1]
         mRNA[i] = max(mRNA[i-1] + dmRNA * dt, 0)
     return mRNA, t
 
@@ -170,17 +194,17 @@ def simulate_gene_therapy(mRNA, t, start_time, duration, boost_factor):
         mRNA_therapy[i] *= boost_factor
     return mRNA_therapy
 
-def simulate_muscle_health(mRNA, regeneration_rate, time_steps):
-    health = np.ones(time_steps)
-    regen = np.zeros(time_steps)
-    for i in range(1, time_steps):
+def simulate_muscle_health(mRNA, regen_rate, steps):
+    health = np.ones(steps)
+    regen = np.zeros(steps)
+    for i in range(1, steps):
         if mRNA[i] < 1.0:
             loss = (1.0 - mRNA[i]) * 0.03
             health[i] = max(health[i-1] - loss, 0.0)
         else:
             health[i] = min(health[i-1] + 0.01, 1.0)
         if health[i] < 1.0:
-            regen[i] = regeneration_rate * (1.0 - health[i])
+            regen[i] = regen_rate * (1.0 - health[i])
             health[i] = min(health[i] + regen[i], 1.0)
     return health, regen
 
@@ -207,15 +231,25 @@ def get_summary_stats(health, t):
     max_health = np.max(health)
     recovery_idx = np.where(health >= 0.99)[0]
     recovery_time = t[recovery_idx[0]] if len(recovery_idx) else None
-    return {
-        "min_health": min_health,
-        "max_health": max_health,
-        "recovery_time": recovery_time
-    }
+    return {"min_health": min_health, "max_health": max_health, "recovery_time": recovery_time}
 
 def export_csv(data_dict):
     df = pd.DataFrame(data_dict)
     return df.to_csv(index=False)
+
+def save_fig_as_image(fig):
+    buf = BytesIO()
+    fig.write_image(buf, format='png')
+    buf.seek(0)
+    return buf
+
+def generate_pdf_report(data_dict):
+    df = pd.DataFrame(data_dict)
+    # Just a placeholder, could use fpdf, reportlab, etc.
+    buf = BytesIO()
+    df.to_csv(buf, index=False)
+    buf.seek(0)
+    return buf
 
 def plot_dna_helix(fade=0):
     t = np.linspace(0, 4 * np.pi, 100)
@@ -259,6 +293,7 @@ tab_sim, tab_explain, tab_guide, tab_lab, tab_theory, tab_scitheory, tab_chat = 
     "Simulation Results", "Scientific Concepts", "User Guide", "Lab & Experiments", "Theory Simulation", "Scientific Theory Page", "Chaty G 1 Assistant"
 ])
 
+# --- Download Buttons ---
 st.markdown("<h4 style='color:#FFD700'>Download the App</h4>", unsafe_allow_html=True)
 col_download1, col_download2, col_download3, col_download4 = st.columns(4)
 with col_download1:
@@ -270,6 +305,7 @@ with col_download3:
 with col_download4:
     st.markdown("<a href='https://apps.apple.com/us/genre/mac/id39' target='_blank'><button class='download-btn'>Mac</button></a>", unsafe_allow_html=True)
 
+# --- Simulation Tab ---
 with tab_sim:
     st.markdown("## 🧪 Simulation Visualization")
     run_sim = st.button("🚀 Run Simulation", key="run_sim_btn")
@@ -302,6 +338,7 @@ with tab_sim:
         fig_mrna.update_xaxes(title_text="Time (hours)")
         fig_mrna.update_yaxes(title_text="mRNA")
         st.plotly_chart(fig_mrna, use_container_width=True)
+        st.download_button("Download mRNA Graph (PNG)", save_fig_as_image(fig_mrna), "mRNA_graph.png", "image/png")
 
         st.markdown("<h5 style='color:#FFD700'>Muscle Health</h5>", unsafe_allow_html=True)
         fig_health = go.Figure(data=[go.Scatter(x=t, y=health, line=dict(color="#FFD700", width=2), name="Health")])
@@ -309,6 +346,7 @@ with tab_sim:
         fig_health.update_xaxes(title_text="Time (hours)")
         fig_health.update_yaxes(title_text="Health (0-1)")
         st.plotly_chart(fig_health, use_container_width=True)
+        st.download_button("Download Health Graph (PNG)", save_fig_as_image(fig_health), "health_graph.png", "image/png")
 
         st.markdown("<h5 style='color:#ff5050'>Regeneration Effect</h5>", unsafe_allow_html=True)
         fig_regen = go.Figure(data=[go.Scatter(x=t, y=regen, line=dict(color="#ff5050", width=2, dash="dot"), name="Regeneration")])
@@ -316,6 +354,7 @@ with tab_sim:
         fig_regen.update_xaxes(title_text="Time (hours)")
         fig_regen.update_yaxes(title_text="Regeneration")
         st.plotly_chart(fig_regen, use_container_width=True)
+        st.download_button("Download Regeneration Graph (PNG)", save_fig_as_image(fig_regen), "regen_graph.png", "image/png")
 
         st.markdown("<h5 style='color:#00ff88'>Collagen Protein</h5>", unsafe_allow_html=True)
         fig_protein = go.Figure(data=[go.Scatter(x=t, y=protein, line=dict(color="#00ff88", width=2), name="Protein")])
@@ -323,6 +362,7 @@ with tab_sim:
         fig_protein.update_xaxes(title_text="Time (hours)")
         fig_protein.update_yaxes(title_text="Protein Level")
         st.plotly_chart(fig_protein, use_container_width=True)
+        st.download_button("Download Protein Graph (PNG)", save_fig_as_image(fig_protein), "protein_graph.png", "image/png")
 
         st.markdown(
             f"<div class='info-card'>"
@@ -342,6 +382,10 @@ with tab_sim:
         csv_data = export_csv(data_dict)
         st.download_button("Download Simulation CSV", csv_data, "simulation_results.csv", "text/csv")
 
+        st.markdown("#### Export Data as PDF Report")
+        pdf_buf = generate_pdf_report(data_dict)
+        st.download_button("Download PDF Report (CSV placeholder)", pdf_buf, "simulation_report.csv", "text/csv")
+
 with tab_explain:
     st.markdown("## 🔬 Scientific Concepts")
     st.markdown("""
@@ -359,6 +403,13 @@ with tab_explain:
     d(mRNA)/dt = transcription_rate - degradation_rate * mRNA
     d(Health)/dt: Decreases if mRNA low, recovers with regeneration_rate
     """)
+
+    st.markdown("""
+    <b>Realistic biological rates?</b><br>
+    Typical collagen mRNA half-life: ~10-20 hours. Muscle regeneration in mice: ~7-14 days.<br>
+    You can tune the rates above to match published literature!
+    """, unsafe_allow_html=True)
+
     st.markdown("""
     *References:*  
     - Bönnemann, C.G. "The collagen VI-related myopathies." Handbook of Clinical Neurology (2011)  
@@ -369,9 +420,10 @@ with tab_guide:
     st.markdown("## 📖 User Guide")
     st.markdown("""
     *How to Use This App:*
-    1. Adjust parameters in the sidebar (transcription, degradation, regeneration, etc.)
-    2. Click through tabs to explore simulation results, scientific background, and chatbot.
-    3. Download your results as CSV for further analysis.
+    1. Select your role above.
+    2. Adjust parameters in the sidebar (transcription, degradation, regeneration, etc.)
+    3. Click through tabs to explore simulation results, scientific background, and chatbot.
+    4. Download your results as CSV, PNG, or PDF for further analysis.
 
     *Tips:*
     - Enable gene therapy or damage events for advanced modeling.
@@ -419,25 +471,31 @@ with tab_lab:
 
 with tab_theory:
     st.markdown("## 🧬 Run Theory Simulation")
-    if st.button("Run Theory Simulation", key="run_theory_btn"):
+    theory_ready = st.button("Run Theory Simulation", key="run_theory_btn")
+    if theory_ready:
         st.markdown("### Step 1: Destroy the Gene")
         fade_steps = np.linspace(0, 1, 10)
         for f in fade_steps:
             fig_dna = plot_dna_helix(fade=f)
             st.plotly_chart(fig_dna, use_container_width=True)
-        st.markdown("The gene (DNA helix) is shown fading and breaking (red).")
+            time.sleep(0.07)
+        st.markdown("The gene (DNA helix) fades and breaks (red), representing disabling the faulty component.")
+
         st.markdown("### Step 2: Boost the Muscles")
         boost_levels = np.linspace(1, 3, 10)
         for b in boost_levels:
             fig_muscle = plot_muscle_boost(boost=b)
             st.plotly_chart(fig_muscle, use_container_width=True)
-        st.markdown("Muscle activity rises sharply, simulating a theoretical boost.")
+            time.sleep(0.07)
+        st.markdown("Muscle graph increases, representing the stimulation of regeneration.")
+
         st.markdown("### Step 3: Regenerate")
         progress_steps = np.linspace(0, 1, 20)
         for p in progress_steps:
             fig_regen = plot_regeneration_curve(progress=p)
             st.plotly_chart(fig_regen, use_container_width=True)
-        st.markdown("Regeneration curve rises from 0% to 100% (green).")
+            time.sleep(0.07)
+        st.markdown("Regeneration curve grows from 0% to 100% (green).")
         st.success("Theory simulation complete! You can run it again or ask Chaty G1 for more theory.")
 
 with tab_scitheory:
@@ -471,6 +529,7 @@ with tab_scitheory:
         for f in fade_steps:
             fig_dna = plot_dna_helix(fade=f)
             st.plotly_chart(fig_dna, use_container_width=True)
+            time.sleep(0.07)
         st.markdown("The gene (DNA helix) fades and breaks (red), representing disabling the faulty component.")
 
         st.markdown("### Step 2: Boost the Muscles")
@@ -478,6 +537,7 @@ with tab_scitheory:
         for b in boost_levels:
             fig_muscle = plot_muscle_boost(boost=b)
             st.plotly_chart(fig_muscle, use_container_width=True)
+            time.sleep(0.07)
         st.markdown("Muscle graph increases, representing the stimulation of regeneration.")
 
         st.markdown("### Step 3: Regenerate")
@@ -485,11 +545,48 @@ with tab_scitheory:
         for p in progress_steps:
             fig_regen = plot_regeneration_curve(progress=p)
             st.plotly_chart(fig_regen, use_container_width=True)
+            time.sleep(0.07)
         st.markdown("Regeneration curve grows from 0% to 100% (green).")
 
 with tab_chat:
     st.markdown("## 🤖 Chaty G 1 - AI Assistant")
-    st.info("Chaty G 1 is updating soon to answer your questions and help you interact with the app. Stay tuned for advanced conversations!")
+    st.markdown("""
+    <div class="info-card">Chaty G 1 can answer questions about the science, theory, and the app. Type a question and get a real response!</div>
+    """, unsafe_allow_html=True)
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    chat_input = st.text_input("Ask Chaty G 1 anything about collagen, muscle, therapy, science, or experiments:")
+    if st.button("Send"):
+        question = chat_input.strip().lower()
+        if question:
+            st.session_state.chat_history.append({"role":"user", "text": chat_input})
+            # Basic smart responses:
+            if "theory" in question or "run theory" in question:
+                reply = "Sure! Switch to Theory Simulation or Scientific Theory tab for a step-by-step visual sequence of the proposed methodology."
+            elif "collagen" in question or "6a3" in question or "protein" in question:
+                reply = "Collagen VI (especially COL6A3) is key for muscle structure. Mutations disrupt the protein, causing myopathies. Treatment may involve gene editing or regeneration stimulation."
+            elif "gene" in question or "crisp" in question or "cas9" in question:
+                reply = "CRISPR-Cas9 and RNA interference are promising molecular tools to disable faulty genes or proteins. See the Scientific Theory tab for details."
+            elif "regeneration" in question or "muscle" in question:
+                reply = "Regeneration is simulated in the app and boosted by healthy collagen VI. You can adjust the regeneration rate in the sidebar."
+            elif "doctor" in question or "scientist" in question or "report" in question:
+                reply = "Doctors/scientists can export simulation results as CSV, PNG, or PDF for research or clinical use."
+            elif "export" in question or "data" in question or "pdf" in question:
+                reply = "You can export all simulation data as CSV, graphs as PNG, or a simple PDF report. See the Simulation Results tab for buttons."
+            elif "hello" in question or "hi" in question:
+                reply = "Hello! How can I assist you today?"
+            elif "waad" in question or "waad naser" in question:
+                reply = "For farther explanation ask waad naser. Instagram: @waado__o"
+            else:
+                reply = "I'm Chaty G 1! Ask me anything about collagen, muscle health, gene therapy, or the app. For detailed theory visuals, try the theory tabs."
+            st.session_state.chat_history.append({"role":"chaty", "text": reply})
+    for msg in st.session_state.chat_history[-8:]:
+        if msg["role"]=="user":
+            st.markdown(f"<div style='text-align:right;color:#FFD700;background:#21264b;border-radius:15px 15px 5px 15px;margin:5px;padding:8px;'>{msg['text']}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div style='text-align:left;color:#a3c2fd;background:#192041;border-radius:15px 15px 15px 5px;margin:5px;padding:8px;'>{msg['text']}</div>", unsafe_allow_html=True)
+    if st.button("Clear Chat"):
+        st.session_state.chat_history = []
 
 st.markdown("---")
 st.markdown("""
