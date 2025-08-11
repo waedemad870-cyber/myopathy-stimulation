@@ -1,11 +1,10 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
 
 st.set_page_config(page_title="Collagen 6A3 Myopathy Simulator", page_icon="🧬", layout="wide")
 
-# --- Custom Theme/Style ---
+# --- Custom Theme ---
 st.markdown("""
 <style>
 body, .main { background: linear-gradient(135deg, #0d102b 0%, #181b25 50%, #0f1419 100%);}
@@ -37,15 +36,11 @@ tab_sim, tab_theory, tab_lab, tab_chem, tab_edu, tab_chat, tab_info = st.tabs([
 # --- SIM TAB ---
 with tab_sim:
     st.markdown("### Simulation Controls")
-    try:
-        t_rate = st.slider("Transcription Rate (mRNA production)", 0.1, 20.0, 5.0, 0.1)
-        d_rate = st.slider("Degradation Rate (mRNA breakdown)", 0.01, 1.0, 0.1, 0.01)
-        r_rate = st.slider("Regeneration Rate (muscle recovery)", 0.01, 1.0, 0.05, 0.01)
-        sim_time = st.slider("Simulation Time (hours)", 10, 100, 50, 1)
-        steps = st.slider("Time Steps (resolution)", 100, 1000, 500, 10)
-    except Exception:
-        st.warning("Input error: Sliders reset to defaults.")
-        t_rate, d_rate, r_rate, sim_time, steps = 5, 0.1, 0.05, 50, 500
+    t_rate = st.slider("Transcription Rate (mRNA production)", 0.1, 20.0, 5.0, 0.1)
+    d_rate = st.slider("Degradation Rate (mRNA breakdown)", 0.01, 1.0, 0.1, 0.01)
+    r_rate = st.slider("Regeneration Rate (muscle recovery)", 0.01, 1.0, 0.05, 0.01)
+    sim_time = st.slider("Simulation Time (hours)", 10, 100, 50, 1)
+    steps = st.slider("Time Steps (resolution)", 100, 1000, 500, 10)
 
     fiber_type = st.selectbox("Muscle Fiber Type", ["Slow-Twitch (Type I)", "Fast-Twitch (Type II)", "Mixed"])
     mut_severity = st.selectbox("Mutation Severity", ["Mild", "Moderate", "Severe"], index=1)
@@ -307,6 +302,5 @@ Instagram: <b>@waado__o</b><br>
 <i>“A mind that sees too far ahead trapped by its own vision.”</i>
 </div>
 """, unsafe_allow_html=True)
-</div>
 """, unsafe_allow_html=True)
 
