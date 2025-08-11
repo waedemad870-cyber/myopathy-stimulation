@@ -4,14 +4,14 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# --- Introduction and Explanation ---
+# --- Page Setup & Custom Theme ---
 st.set_page_config(
     page_title="Collagen 6A3 Myopathy Simulator",
     page_icon="🧬",
     layout="wide"
 )
 
-# Custom dark theme styling using Markdown/HTML
+# Custom dark theme and accent styles
 st.markdown("""
 <style>
 body, .main {
@@ -20,6 +20,24 @@ body, .main {
 h1, h2, h3, h4, h5, h6 {
     color: #a3c2fd !important;
     text-shadow: 0 0 10px rgba(163, 194, 253, 0.3);
+}
+.info-card {
+    background: linear-gradient(145deg, #192041, #21264b);
+    color: #FFD700;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 0 15px #181b25;
+    margin: 10px 0;
+    border: 1.5px solid #a3c2fd;
+}
+.explain-popup {
+    background: linear-gradient(145deg, #21264b, #0d102b);
+    color: #FFD700;
+    border-radius: 14px;
+    padding: 18px;
+    margin: 10px 0;
+    box-shadow: 0 0 10px #FFD700;
+    border: 2px solid #FFD700;
 }
 .stTabs [data-baseweb="tab"] {
     background: linear-gradient(145deg, #192041, #21264b) !important;
@@ -36,21 +54,59 @@ h1, h2, h3, h4, h5, h6 {
 </style>
 """, unsafe_allow_html=True)
 
+# --- App Header ---
 st.markdown(
-    "<h1 style='text-align: center; color:#a3c2fd;'>🧬 Collagen 6A3 Myopathy Simulator</h1>",
+    "<h1 style='text-align:center;'>🧬 Collagen 6A3 Myopathy Simulator</h1>",
     unsafe_allow_html=True
 )
 st.markdown(
-    "<h3 style='text-align: center; color:#FFD700;'>Modeling gene expression, muscle health, and regeneration</h3>",
+    "<h3 style='text-align:center;'>Gene Expression · Muscle Health · Regeneration Modeling</h3>",
     unsafe_allow_html=True
 )
 st.markdown("---")
-st.markdown("""
-**What does this app do?**
-- Simulates gene expression (mRNA production/degradation) for Collagen 6A3
-- Models muscle health and regeneration over time
-- Lets you explore different disease severities, muscle types, and interventions
-""")
+
+# --- Feature Buttons Section ---
+colA, colB, colC = st.columns([1, 1, 2])
+with colA:
+    if st.button("💡 What is Myopathy & Collagen VI?"):
+        st.markdown("""
+        <div class="explain-popup">
+        <b>What is Myopathy?</b><br>
+        Myopathy is a disease affecting muscle fibers and strength, often caused by genetic mutations.<br><br>
+        <b>Collagen VI Chains:</b><br>
+        <ul>
+        <li><b>A1 (COL6A1):</b> Stability and structure</li>
+        <li><b>A2 (COL6A2):</b> Helps assemble collagen fibers</li>
+        <li><b>A3 (COL6A3):</b> <span style='color:#FFD700;font-weight:bold;'>MOST crucial for muscle health!</span><br>
+        Mutations here cause severe disorders (Ullrich CMD, Bethlem myopathy).
+        <br><br>
+        <b>COL6A3 dysfunction:</b> Leads to poor muscle regeneration, mitochondrial failure, and increased cell death.
+        </li>
+        </ul>
+        <b>Why focus on A3?</b> It’s most often mutated in congenital muscle diseases and a key target for research and therapy!
+        </div>
+        """, unsafe_allow_html=True)
+with colB:
+    if st.button("🛠 About This App"):
+        st.markdown("""
+        <div class="explain-popup">
+        <b>This Simulator helps you:</b>
+        <ul>
+        <li>Model gene expression for Collagen 6A3</li>
+        <li>Visualize muscle health and regeneration</li>
+        <li>Test effects of severity, fiber type, therapy, and injury</li>
+        <li>Export results, view interactive charts, and chat with the built-in assistant!</li>
+        </ul>
+        <b>How to use?</b> Adjust sidebar controls, run a simulation, and explore the tabs!
+        </div>
+        """, unsafe_allow_html=True)
+
+with colC:
+    st.markdown("""
+    <div class='info-card'>
+    <b>Features:</b> Simulation · Therapy · Injury · Multi-fiber types · Visual Dashboard · AI Assistant
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- Sidebar: User Inputs ---
 st.sidebar.markdown("<h2 style='color:#FFD700;'>Simulation Controls</h2>", unsafe_allow_html=True)
@@ -88,32 +144,24 @@ else:
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
-**How to run:**  
-- Install dependencies: `pip install streamlit numpy pandas plotly`  
-- Run: `streamlit run app.py`
+*How to run:*  
+- Install dependencies: pip install streamlit numpy pandas plotly  
+- Run: streamlit run app.py
 - Try Streamlit Cloud for easy deployment!
 """)
 
-# --- Helper Functions ---
+# --- Simulation Functions ---
 def simulate_gene_expression(transcription_rate, degradation_rate, simulation_time, time_steps):
-    """
-    Simulate mRNA concentration using Euler's method.
-    """
     dt = simulation_time / time_steps
     t = np.linspace(0, simulation_time, time_steps)
     mRNA = np.zeros(time_steps)
-    # Initial mRNA value
-    mRNA[0] = 0.0
+    mRNA[0] = 1.0
     for i in range(1, time_steps):
         dmRNA = transcription_rate - degradation_rate * mRNA[i-1]
-        mRNA[i] = mRNA[i-1] + dmRNA * dt
-        mRNA[i] = max(mRNA[i], 0)
+        mRNA[i] = max(mRNA[i-1] + dmRNA * dt, 0)
     return mRNA, t
 
 def simulate_gene_therapy(mRNA, t, start_time, duration, boost_factor):
-    """
-    Apply a temporary boost to mRNA concentration for gene therapy.
-    """
     mRNA_therapy = mRNA.copy()
     start_idx = np.searchsorted(t, start_time)
     end_idx = np.searchsorted(t, start_time + duration)
@@ -122,28 +170,20 @@ def simulate_gene_therapy(mRNA, t, start_time, duration, boost_factor):
     return mRNA_therapy
 
 def simulate_muscle_health(mRNA, regeneration_rate, time_steps):
-    """
-    Simulate muscle health (0-1 scale) based on mRNA (collagen proxy).
-    """
     health = np.ones(time_steps)
     regen = np.zeros(time_steps)
     for i in range(1, time_steps):
-        # Health decreases if mRNA is low
         if mRNA[i] < 1.0:
             loss = (1.0 - mRNA[i]) * 0.03
             health[i] = max(health[i-1] - loss, 0.0)
         else:
             health[i] = min(health[i-1] + 0.01, 1.0)
-        # Regeneration effect if health < 1
         if health[i] < 1.0:
             regen[i] = regeneration_rate * (1.0 - health[i])
             health[i] = min(health[i] + regen[i], 1.0)
     return health, regen
 
 def simulate_damage_event(health, t, damage_time, damage_severity):
-    """
-    Apply acute muscle damage at specific time.
-    """
     health_damaged = health.copy()
     idx = np.searchsorted(t, damage_time)
     if idx < len(health):
@@ -153,10 +193,8 @@ def simulate_damage_event(health, t, damage_time, damage_severity):
     return health_damaged
 
 def simulate_protein(mRNA, t):
-    """
-    Simulate collagen protein synthesis from mRNA (simple model).
-    """
     protein = np.zeros_like(mRNA)
+    protein[0] = 1.0
     for i in range(1, len(mRNA)):
         synthesis = mRNA[i] * 0.5
         degradation = protein[i-1] * 0.1
@@ -164,9 +202,6 @@ def simulate_protein(mRNA, t):
     return protein
 
 def get_summary_stats(health, t):
-    """
-    Calculate summary statistics.
-    """
     min_health = np.min(health)
     max_health = np.max(health)
     recovery_idx = np.where(health >= 0.99)[0]
@@ -178,9 +213,6 @@ def get_summary_stats(health, t):
     }
 
 def export_csv(data_dict):
-    """
-    Export simulation data as CSV string.
-    """
     df = pd.DataFrame(data_dict)
     return df.to_csv(index=False)
 
@@ -192,33 +224,30 @@ tab_sim, tab_explain, tab_guide, tab_chat = st.tabs([
 # --- Simulation Tab ---
 with tab_sim:
     st.markdown("## 🧪 Simulation Visualization")
-    with st.spinner("Running gene expression and muscle health simulation..."):
-        # Apply mutation severity
+    run_sim = st.button("🚀 Run Simulation", key="run_sim_btn")
+    if run_sim or st.session_state.get("last_sim", False):
+        st.session_state["last_sim"] = True
         severity = {"Mild": (0.9, 1.1), "Moderate": (0.7, 1.3), "Severe": (0.5, 1.6)}
         tr_mult, dr_mult = severity[mutation_severity]
         adj_tr = transcription_rate * tr_mult
         adj_dr = degradation_rate * dr_mult
 
-        # Fiber type effect (simple demo)
-        if fiber_type == "Slow-Twitch (Type I)": regen_mult = 1.2
-        elif fiber_type == "Fast-Twitch (Type II)": regen_mult = 0.8
-        else: regen_mult = 1.0
-
+        # Fiber type effect
+        if fiber_type == "Slow-Twitch (Type I)":
+            regen_mult = 1.2
+        elif fiber_type == "Fast-Twitch (Type II)":
+            regen_mult = 0.8
+        else:
+            regen_mult = 1.0
         adj_regen = regeneration_rate * regen_mult
 
-        # Run gene expression
         mRNA, t = simulate_gene_expression(adj_tr, adj_dr, simulation_time, time_steps)
-        # Apply gene therapy
         if enable_gene_therapy and therapy_duration > 0:
             mRNA = simulate_gene_therapy(mRNA, t, therapy_start_time, therapy_duration, therapy_boost)
-        # Run health model
         health, regen = simulate_muscle_health(mRNA, adj_regen, time_steps)
-        # Apply damage event
         if enable_damage and damage_severity > 0:
             health = simulate_damage_event(health, t, damage_time, damage_severity)
-        # Protein model
         protein = simulate_protein(mRNA, t)
-        # Stats
         stats = get_summary_stats(health, t)
 
         # --- Plotly Visualization ---
@@ -242,7 +271,9 @@ with tab_sim:
             font_color="#a3c2fd",
             height=600
         )
-        for i in range(1,3): fig.update_xaxes(title_text="Time (hours)", row=i, col=1), fig.update_xaxes(title_text="Time (hours)", row=i, col=2)
+        for i in range(1,3):
+            fig.update_xaxes(title_text="Time (hours)", row=i, col=1)
+            fig.update_xaxes(title_text="Time (hours)", row=i, col=2)
         fig.update_yaxes(title_text="mRNA", row=1, col=1)
         fig.update_yaxes(title_text="Health (0-1)", row=1, col=2)
         fig.update_yaxes(title_text="Regeneration", row=2, col=1)
@@ -250,11 +281,14 @@ with tab_sim:
         st.plotly_chart(fig, use_container_width=True)
 
         # --- Summary Stats ---
-        st.markdown(f"""
-        **Min Health:** {stats['min_health']:.3f}  
-        **Max Health:** {stats['max_health']:.3f}  
-        **Time to Full Regeneration:** {stats['recovery_time']:.1f} hours  
-        """)
+        st.markdown(
+            f"<div class='info-card'>"
+            f"<b>Min Health:</b> {stats['min_health']:.3f} &nbsp;&nbsp;"
+            f"<b>Max Health:</b> {stats['max_health']:.3f} &nbsp;&nbsp;"
+            f"<b>Time to Full Regeneration:</b> {stats['recovery_time']:.1f} hours"
+            f"</div>", unsafe_allow_html=True
+        )
+
         # --- Download ---
         data_dict = {
             "Time": t,
@@ -270,43 +304,43 @@ with tab_sim:
 with tab_explain:
     st.markdown("## 🔬 Scientific Concepts")
     st.markdown("""
-    **Gene Expression and Collagen 6A3**
+    *Gene Expression and Collagen 6A3*
     - Collagen VI (COL6A3) is critical for muscle structure and repair.
     - Mutations can lead to Bethlem myopathy or Ullrich congenital muscular dystrophy.
     - mRNA levels approximate collagen production.
 
-    **Muscle Health Modeling**
+    *Muscle Health Modeling*
     - Health ranges from 0 (damaged) to 1 (healthy).
     - Low collagen leads to declining tissue health.
     - Regeneration helps recover health after injury.
 
-    **Simulation Equations**
-    ```
+    *Simulation Equations*
+    
     d(mRNA)/dt = transcription_rate - degradation_rate * mRNA
     d(Health)/dt: Decreases if mRNA low, recovers with regeneration_rate
-    ```
+    
     """)
     st.markdown("""
-    **References:**  
-    - Bönnemann, C.G. "The collagen VI-related myopathies." *Handbook of Clinical Neurology* (2011)  
-    - Lampe, A.K., & Bushby, K.M. "Collagen VI related muscle disorders." *Journal of Medical Genetics* (2005)
+    *References:*  
+    - Bönnemann, C.G. "The collagen VI-related myopathies." Handbook of Clinical Neurology (2011)  
+    - Lampe, A.K., & Bushby, K.M. "Collagen VI related muscle disorders." Journal of Medical Genetics (2005)
     """)
 
 # --- User Guide Tab ---
 with tab_guide:
     st.markdown("## 📖 User Guide")
     st.markdown("""
-    **How to Use This App:**
+    *How to Use This App:*
     1. Adjust parameters in the sidebar (transcription, degradation, regeneration, etc.)
     2. Click through tabs to explore simulation results, scientific background, and chatbot.
     3. Download your results as CSV for further analysis.
 
-    **Tips:**
+    *Tips:*
     - Enable gene therapy or damage events for advanced modeling.
     - Use the chatbot for interactive help and navigation.
 
-    **Deployment:**
-    - Run locally: `streamlit run app.py`
+    *Deployment:*
+    - Run locally: streamlit run app.py
     - Deploy to [Streamlit Cloud](https://streamlit.io/cloud)
     """)
 
@@ -316,8 +350,6 @@ with tab_chat:
     # --- Chat UI State ---
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
-    if 'chat_input' not in st.session_state:
-        st.session_state.chat_input = ""
     chat_container = st.container()
     with chat_container:
         st.markdown('<div style="max-height:300px;overflow-y:auto;background:#141627;border-radius:10px;padding:10px;">', unsafe_allow_html=True)
@@ -355,7 +387,6 @@ with tab_chat:
         st.session_state.chat_history.append({'sender':'user','text':chat_input})
         reply, action = chaty_g1_respond(chat_input)
         st.session_state.chat_history.append({'sender':'chaty_g1','text':reply})
-        st.session_state.chat_input = ""
         if action == "navigate_sim":
             st.experimental_set_query_params(tab="Simulation Results")
         if action == "reset_sim":
